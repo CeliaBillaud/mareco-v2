@@ -1,12 +1,13 @@
+import { Reco } from "../entities/Reco";
+import { User } from "../entities/User";
 import * as dotenv from "dotenv";
 import { DataSource } from "typeorm";
-import { User } from "@/entities/User";
 
 dotenv.config();
 const { DB_HOST, DB_USER, DB_DATABASE, DB_PASSWORD, DB_PORT } = process.env;
 
 export const dataSource = new DataSource({
-  entities: [User],
+  entities: [User, Reco],
   //create and modify table in bdd from my entities, in the futur : create migrations more secure
   synchronize: true,
   logging: true,

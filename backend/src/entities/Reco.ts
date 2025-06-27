@@ -1,15 +1,22 @@
 import { Field, ObjectType } from "type-graphql";
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from "typeorm";
+import { User } from "./User";
 
 @Entity()
 @ObjectType()
-export class User extends BaseEntity {
+export class Reco extends BaseEntity {
   @PrimaryGeneratedColumn()
   @Field()
   id: number;
 
   @Field()
-  @Column()
+  @Column({ length: 200 })
   title: string;
 
   @Field()
@@ -17,10 +24,15 @@ export class User extends BaseEntity {
   content: string;
 
   @Field()
-  @Column()
+  @Column({ length: 50 })
   type: string;
 
   @Field()
-  @Column()
-  link: string;
+  @Column({ nullable: true })
+  link?: string;
+
+  //une Reco appartient à un Utilisteur
+  @ManyToOne(() => User, (user) => user.recos, { eager: true })
+  @Field(() => User)
+  user: User;
 }

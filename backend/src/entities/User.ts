@@ -1,5 +1,12 @@
 import { Field, ObjectType } from "type-graphql";
-import { BaseEntity, Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import {
+  BaseEntity,
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  OneToMany,
+} from "typeorm";
+import { Reco } from "./Reco";
 
 @Entity()
 @ObjectType()
@@ -18,4 +25,8 @@ export class User extends BaseEntity {
 
   @Column()
   password: string;
+
+  @OneToMany(() => Reco, (reco) => reco.user)
+  @Field(() => [Reco])
+  recos: Reco[];
 }
