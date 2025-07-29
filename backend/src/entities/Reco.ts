@@ -31,6 +31,10 @@ export class Reco extends BaseEntity {
   @Column({ nullable: true })
   link?: string;
 
+  // @Field()
+  // @Column()
+  // image?: string;
+
   //une Reco appartient à un Utilisteur
   @ManyToOne(() => User, (user) => user.recos, { eager: true })
   @Field(() => User)

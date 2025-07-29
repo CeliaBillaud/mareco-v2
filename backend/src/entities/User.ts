@@ -24,7 +24,7 @@ export class User extends BaseEntity {
   email: string;
 
   @Column()
-  password: string;
+  hashedPassword: string;
 
   @OneToMany(() => Reco, (reco) => reco.user)
   @Field(() => [Reco])

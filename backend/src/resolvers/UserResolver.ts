@@ -9,12 +9,23 @@ import {
   Resolver,
 } from "type-graphql";
 import { FindManyOptions } from "typeorm";
+import * as argon2 from "argon2";
+import * as jwt from "jsonwebtoken";
 
 @InputType()
-class UserInput {
+class NewUserInput {
   @Field()
   username: string;
 
+  @Field()
+  email: string;
+
+  @Field()
+  password: string;
+}
+
+@InputType()
+class UserInput {
   @Field()
   email: string;
 
@@ -43,15 +54,7 @@ export default class UserResolver {
   }
 
   @Mutation(() => ID)
-  async createUser(@Arg("data") data: UserInput) {
-    // Le spread "casse" l'instance de classe pour créer un objet simple que TypeORM peut utiliser.
-    const user = User.create({ ...data });
-    await user.save();
-    return user.id;
-  }
-
-  @Mutation(() => ID)
-  async updateUser(@Arg("id") id: number, @Arg("data") data: UserInput) {
+  async updateUser(@Arg("id") id: number, @Arg("data") data: NewUserInput) {
     let user = await User.findOneByOrFail({ id });
     user = Object.assign(user, { ...data });
     await user.save();
@@ -62,5 +65,35 @@ export default class UserResolver {
   async deleteUser(@Arg("id") id: number) {
     await User.delete({ id });
     return id;
+  }
+
+  @Mutation(() => ID)
+  async signup(@Arg("data") data: NewUserInput) {
+    const hashedPassword = await argon2.hash(data.password);
+    const user = User.create({ ...data, hashedPassword });
+    await user.save();
+    const payload = {
+      id: user.id,
+    };
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) throw new Error("Missing env variable : JWT_SECRET");
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
+    // return user.id;
+    return token;
+  }
+
+  @Mutation(() => ID)
+  async login(@Arg("data") data: UserInput) {
+    const user = await User.findOneOrFail({ where: { email: data.email } });
+    const isValid = await argon2.verify(user.hashedPassword, data.password);
+    if (!isValid) throw new Error("Invalid password");
+
+    const payload = {
+      id: user.id,
+    };
+    const JWT_SECRET = process.env.JWT_SECRET;
+    if (!JWT_SECRET) throw new Error("Missing env variable : JWT_SECRET");
+    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: "1d" });
+    return token;
   }
 }
